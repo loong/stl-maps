@@ -14,7 +14,7 @@ int main() {
   map.insert(pair<int, string>(2, "two"));
   map.insert(pair<int, string>(1, "one"));
   map.insert(pair<int, string>(3, "three"));
-  map.insert(pair<int, string>(12, "twelve"));
+  //  map.insert(pair<int, string>(12, "twelve"));
 
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 

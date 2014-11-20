@@ -66,7 +66,6 @@ public:
     }
 
     bool operator!=(const _iterator& x) {
-      cout << node_m << " " << x.node_m << endl;
       return (node_m != x.node_m);
     }
 
@@ -257,30 +256,20 @@ public:
   }
 
   static Node* _successor(Node* n) {
-	cout << "val: " <<  (n->value_m).second << endl;
-
-      // Case 1: has right child
-      if (n->right_m != NULL) {
-	cout << "Case 1" << (n->value_m).second << endl;
-	return _leftmost_node(n->right_m);
-      }
-      else {
-	// Case 2: is left child of parent
-	if (n->parent_m->left_m == n) {
-	  cout << "Case 2" << endl;
-	  return n->parent_m;
-	}
-	else { // Case 3: 
-	  Node* pos = n;
-	  while (pos->parent_m != NULL && pos == pos->parent_m->right_m) {
-	    pos = n->parent_m;
-	  }
-
-	  cout << "Case 3" << (n->value_m).second << endl;
-	  return pos->parent_m;
-	}
-      }
+    if (n->right_m != NULL) {
+      return _leftmost_node(n->right_m);
     }
+    else {
+      Node* pos = n;
+      Node* pos_parent = n->parent_m;
+      while (pos_parent != NULL && pos == pos_parent->right_m) {
+	pos = pos_parent;
+	pos_parent = pos_parent->parent_m;
+      }
+	
+      return pos_parent;
+    }
+  }
 
   static void _recursive_delete(Node* n) {
     if (n == NULL) {
