@@ -12,11 +12,15 @@ int main() {
   map.insert(pair<int, string>(2, "eins"));
   map.insert(pair<int, string>(1, "HALLO"));
   map.insert(pair<int, string>(3, ""));
-  cout << map.insert(pair<int, string>(3, "")).second << endl;
+  cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
   cout << map.min().first << endl;
   cout << map.min().second << endl;
   cout << map.size() << endl;
+
+  cout << "Find 10:\t" << map.find(10)->second << endl;
+  cout << "Find 3:\t" << map.find(3)->second << endl;
+  cout << "Find 4:\t"  << (map.find(4) == map.end()) << endl;
 
   bstmap<int, int>::iterator it;
 }

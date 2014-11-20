@@ -117,22 +117,27 @@ public:
 
   // accessors:
   iterator begin() {
-    // return iterator(this, leftmost_element())
     return iterator(_leftmost_node());
   }
+
   const_iterator begin() const {
-    //have to return const_iterator
+    return const_iterator(_leftmost_node());
   }
+
   iterator end() {
-    //wraper of null??
     if (empty()) {
       return begin();
     }
+
     return iterator(NULL);
   }
 
   const_iterator end() const {
-    
+    if (empty()) {
+      return begin();
+    }
+
+    return const_iterator(NULL);
   }
 
   bool empty() const {
@@ -145,7 +150,7 @@ public:
 
   // insert/erase
   pair<iterator, bool> insert(const value_type& x) {
-    pair<Node*, bool> res =_find(x, root_m);
+    pair<Node*, bool> res =_find(x.first, root_m);
 
     if (res.second == true) {  // means value is already in tree
       return pair<iterator, bool>(iterator(res.first), false);
@@ -176,10 +181,41 @@ public:
   }
 
   // map operations:
-  iterator find(const Key& x) {}
-  const_iterator find(const Key& x) const {}
-  size_type count(const Key& x) const {}
-  T& operator[](const Key& k) {}
+  iterator find(const Key& x) {
+    pair<Node*, bool> res = _find(x, root_m);
+
+    if (res.second) { // found key
+      return iterator(res.first);
+    }
+    
+    return end();
+  }
+
+  const_iterator find(const Key& x) const {
+    pair<Node*, bool> res = _find(x, root_m);
+
+    if (res.second) { // found key
+      return const_iterator(res.first);
+    }
+    
+    return end();
+  }
+
+  /**
+   * \brief Because all elements in a map container are unique, the
+   * function can only return 1 (if the element is found) or zero
+   * (otherwise).
+   */
+  size_type count(const Key& x) const {
+    if (find(x) != end()) {
+      return 1;
+    }
+    return 0;
+  }
+
+  T& operator[](const Key& k) {
+    
+  }
 
 
   value_type& min() {
@@ -191,19 +227,23 @@ public:
   }
   
 private:
-  pair<Node*, bool> _find(const value_type& val, Node* subtree, Node* parent = NULL) const {
+
+  /**
+   * \return bool true if found
+   */
+  pair<Node*, bool> _find(const key_type& key, Node* subtree, Node* parent = NULL) const {
     if (subtree == NULL) {
       return pair<Node*, bool>(parent, false);
     }
     
-    if (subtree->value_m.first == val.first) {
+    if (subtree->value_m.first == key) {
       return pair<Node*, bool>(subtree, true);
     }
-    else if (subtree->value_m.first > val.first) {
-      return _find(val, subtree->left_m, subtree);
+    else if (subtree->value_m.first > key) {
+      return _find(key, subtree->left_m, subtree);
     }
     else {
-      return _find(val, subtree->right_m, subtree);
+      return _find(key, subtree->right_m, subtree);
     }
   }
 
