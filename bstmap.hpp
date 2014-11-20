@@ -23,8 +23,6 @@ private:
     Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
       value_m(val), parent_m(parent), left_m(left), right_m(right) {}
 
-    /// internal implementation
-  public:
     value_type value_m;
     Node* parent_m;
     Node* left_m;
@@ -103,7 +101,9 @@ public:
   // default constructor to create an empty map
   bstmap() : root_m(NULL) {}
 
-  // recursive destruction
+  ~bstmap() {
+    clear();
+  }
 
   // overload copy constructor to do a deep copy
   bstmap(const Self& x) {
@@ -139,7 +139,9 @@ public:
     return root_m == NULL;
   }
 
-  size_type size() const {}
+  size_type size() const {
+    return _size(root_m);
+  }
 
   // insert/erase
   pair<iterator, bool> insert(const value_type& x) {
@@ -156,7 +158,7 @@ public:
 
     // create new node
     Node* new_node = new Node(x, res.first);
-    if (x.second < (res.first->value_m).second) {
+    if (x.first < (res.first->value_m).first) {
       res.first->left_m = new_node;      
     }
     else {
@@ -168,7 +170,10 @@ public:
 
   void erase(iterator pos) {}
   size_type erase(const Key& x) {}
-  void clear() {}
+  
+  void clear() {
+    _recursive_delete(root_m);
+  }
 
   // map operations:
   iterator find(const Key& x) {}
@@ -191,10 +196,10 @@ private:
       return pair<Node*, bool>(parent, false);
     }
     
-    if (subtree->value_m.second == val.second) {
+    if (subtree->value_m.first == val.first) {
       return pair<Node*, bool>(subtree, true);
     }
-    else if (subtree->value_m.second > val.second) {
+    else if (subtree->value_m.first > val.first) {
       return _find(val, subtree->left_m, subtree);
     }
     else {
@@ -225,4 +230,27 @@ private:
     return head;
   }
 
+  void _recursive_delete(Node* n) {
+    if (n == NULL) {
+      cout << "Logic Error" << endl;
+    }
+
+    if (n->left_m != NULL) {
+      delete n->left_m;
+    }
+    
+    if (n->right_m != NULL) {
+      delete n->right_m;
+    } 
+
+    delete n;
+  }
+
+  size_type _size(Node* n) const {
+    if (n == NULL) {
+      return 0;
+    }
+
+    return 1 + _size(n->left_m) + _size(n->right_m);
+  }
 };

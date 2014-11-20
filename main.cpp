@@ -7,13 +7,16 @@
 using namespace std;
 
 int main() {
-  bstmap<string, int> map;
-  map.insert(pair<string, int>("eins", 1));
-  map.insert(pair<string, int>("HALLO", 2));
-  map.insert(pair<string, int>("BAIBAI", 3));
+  bstmap<int, string> map;
+  map.insert(pair<int, string>(10, "BAIBAI"));
+  map.insert(pair<int, string>(2, "eins"));
+  map.insert(pair<int, string>(1, "HALLO"));
+  map.insert(pair<int, string>(3, ""));
+  cout << map.insert(pair<int, string>(3, "")).second << endl;
 
   cout << map.min().first << endl;
   cout << map.min().second << endl;
+  cout << map.size() << endl;
 
-  bstmap<string, int>::iterator it;
+  bstmap<int, int>::iterator it;
 }
