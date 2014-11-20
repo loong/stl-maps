@@ -32,9 +32,9 @@ private:
   Node* root_m;
 
 public:
-  template<typename pointer_T, typename reference_T> 
+
   /// can't figure out how to get rid of the second one 
-  
+  template<typename pointer_T, typename reference_T> 
   class _iterator {
   public:
     typedef input_iterator_tag iterator_category;
@@ -66,28 +66,19 @@ public:
     }
 
     bool operator!=(const _iterator& x) {
+      cout << node_m << " " << x.node_m << endl;
       return (node_m != x.node_m);
     }
 
+    // to lazy to return it by reference 
     _iterator& operator++() {
-      ++(*this);
-      return this;
+      node_m = _successor(node_m);
+      return *this;
     }
 
-    _iterator& operator++(int) {
+    _iterator operator++(int) {
       _iterator temp = *this;
       ++(*this);
-      return temp;
-    }
-
-    _iterator& operator--() {
-      --(*this);
-      return this;
-    }
-    
-    _iterator& operator--(int) {
-      _iterator temp = *this;
-      --(*this);
       return temp;
     }
 
@@ -117,7 +108,7 @@ public:
 
   // accessors:
   iterator begin() {
-    return iterator(_leftmost_node());
+    return iterator(_leftmost_node(root_m));
   }
 
   const_iterator begin() const {
@@ -217,16 +208,15 @@ public:
     
   }
 
-
   value_type& min() {
-    return _leftmost_node()->value_m;
+    return _leftmost_node(root_m)->value_m;
   }
 
   value_type& max() {
-    return _rightmost_node()->value_m;
+    return _rightmost_node(root_m)->value_m;
   }
   
-private:
+public:
 
   /**
    * \return bool true if found
@@ -247,30 +237,52 @@ private:
     }
   }
 
-  Node* _leftmost_node() {
-    Node* head = root_m;
-
-    if (head != NULL) {
-      while (head->left_m != NULL) {
-	head = head->left_m;
+  static Node* _leftmost_node(Node* subtree) {
+    if (subtree != NULL) {
+      while (subtree->left_m != NULL) {
+	subtree = subtree->left_m;
       }
     }
-    return head;    
+    return subtree;
   }
 
-  Node* _rightmost_node() {
-    Node* head = root_m;
-    
-    if (head == NULL) {
-      while (head->right_m != NULL) {
-	head = head->right_m;
+  static Node* _rightmost_node(Node* subtree) {    
+    if (subtree == NULL) {
+      while (subtree->right_m != NULL) {
+	subtree = subtree->right_m;
       }
     }
 
-    return head;
+    return subtree;
   }
 
-  void _recursive_delete(Node* n) {
+  static Node* _successor(Node* n) {
+	cout << "val: " <<  (n->value_m).second << endl;
+
+      // Case 1: has right child
+      if (n->right_m != NULL) {
+	cout << "Case 1" << (n->value_m).second << endl;
+	return _leftmost_node(n->right_m);
+      }
+      else {
+	// Case 2: is left child of parent
+	if (n->parent_m->left_m == n) {
+	  cout << "Case 2" << endl;
+	  return n->parent_m;
+	}
+	else { // Case 3: 
+	  Node* pos = n;
+	  while (pos->parent_m != NULL && pos == pos->parent_m->right_m) {
+	    pos = n->parent_m;
+	  }
+
+	  cout << "Case 3" << (n->value_m).second << endl;
+	  return pos->parent_m;
+	}
+      }
+    }
+
+  static void _recursive_delete(Node* n) {
     if (n == NULL) {
       cout << "Logic Error" << endl;
     }
@@ -286,11 +298,13 @@ private:
     delete n;
   }
 
-  size_type _size(Node* n) const {
+  static size_type _size(Node* n) {
     if (n == NULL) {
       return 0;
     }
 
     return 1 + _size(n->left_m) + _size(n->right_m);
   }
+
+
 };

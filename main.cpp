@@ -6,12 +6,16 @@
 
 using namespace std;
 
+typedef bstmap<int, string> Map;
+
 int main() {
-  bstmap<int, string> map;
-  map.insert(pair<int, string>(10, "BAIBAI"));
-  map.insert(pair<int, string>(2, "eins"));
-  map.insert(pair<int, string>(1, "HALLO"));
-  map.insert(pair<int, string>(3, ""));
+  Map map;
+  map.insert(pair<int, string>(10, "ten"));
+  map.insert(pair<int, string>(2, "two"));
+  map.insert(pair<int, string>(1, "one"));
+  map.insert(pair<int, string>(3, "three"));
+  map.insert(pair<int, string>(12, "twelve"));
+
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
   cout << map.min().first << endl;
@@ -23,4 +27,8 @@ int main() {
   cout << "Find 4:\t"  << (map.find(4) == map.end()) << endl;
 
   bstmap<int, int>::iterator it;
+
+  for (Map::iterator i = map.begin(); i != map.end(); ++i) {
+    cout << (*i).second << endl;
+  }
 }
