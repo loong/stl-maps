@@ -1,7 +1,7 @@
 #include <utility>
 #include <cstddef>
 #include <iterator>
-
+#include <iostream>
 
 using namespace std;
 
@@ -17,26 +17,37 @@ public:
   typedef unsigned int       size_type;
   typedef int                difference_type;
 
-
 private:
-  class Node;
+  class Node  {
+  public:
+    Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
+      value_m(val), parent_m(parent), left_m(left), right_m(right) {}
+
+    /// internal implementation
+  public:
+    value_type value_m;
+    Node* parent_m;
+    Node* left_m;
+    Node* right_m;
+  };
+
   Node* root_m;
 
 public:
   class iterator {
+  public:
     typedef input_iterator_tag iterator_category;
     // typedef value_type value_type;
     // typedef dfference_type difference_type;
     typedef value_type* pointer;
     typedef value_type& reference;
 
-    friend class bstmap;
+    //friend class bstmap;
 
-    iterator(bstmap* map, Node* n = NULL) : map_m(map), node_m(n) {}
-    iterator(const iterator& x) : map_m(x.map_m), node_m(x.node_m) {}
+    iterator(Node* n = NULL) : node_m(n) {}
+    iterator(const iterator& x) : node_m(x.node_m) {}
     
     iterator& operator=(iterator& x) {
-      map_m = x.map_m;    // maybe redundant
       node_m = x.node_m;
       return *this;
     }
@@ -57,7 +68,28 @@ public:
       return (node_m != x.node_m);
     }
 
-    bstmap* map_m;
+    iterator& operator++() {
+      ++(*this);
+      return this;
+    }
+
+    iterator& operator++(int) {
+      iterator temp = *this;
+      ++(*this);
+      return temp;
+    }
+
+    iterator& operator--() {
+      --(*this);
+      return this;
+    }
+    
+    iterator& operator--(int) {
+      iterator temp = *this;
+      --(*this);
+      return temp;
+    }
+
     Node* node_m;
   };
   
@@ -100,19 +132,24 @@ public:
     pair<Node*, bool> res =_find(x, root_m);
 
     if (res.second == true) {  // means value is already in tree
-      return pair<iterator, bool>(iterator(this, res.first), false);
+      return pair<iterator, bool>(iterator(res.first), false);
     }
     
+    if (res.first == NULL) {
+      root_m = new Node(x); // First Node insertaion
+      return pair<iterator, bool>(iterator(root_m), true);
+    }
+
     // create new node
     Node* new_node = new Node(x, res.first);
-    if (x < res.first->value_m) {
+    if (x.second < (res.first->value_m).second) {
       res.first->left_m = new_node;      
     }
     else {
       res.first->right_m = new_node;
     }
 
-    return pair<iterator, bool>(iterator(this, new_node), true);
+    return pair<iterator, bool>(iterator(new_node), true);
   }
 
   void erase(iterator pos) {}
@@ -126,37 +163,20 @@ public:
   T& operator[](const Key& k) {}
 
 private:
-
-  pair<Node*, bool> _find(value_type& val, Node* subtree, Node* parent = NULL) const {
+  pair<Node*, bool> _find(const value_type& val, Node* subtree, Node* parent = NULL) const {
     if (subtree == NULL) {
       return pair<Node*, bool>(parent, false);
     }
     
-    if (subtree->value_m == val) {
+    if (subtree->value_m.second == val.second) {
       return pair<Node*, bool>(subtree, true);
     }
-    else if (subtree->value_m > val) {
-      return _find(subtree->parent_m, subtree->left_m, val);
+    else if (subtree->value_m.second > val.second) {
+      return _find(val, subtree->left_m, subtree->parent_m);
     }
     else {
-      return _find(subtree->parent_m, subtree->right_m, val);
+      return _find(val, subtree->right_m, subtree->parent_m);
     }
   }
 
-};
-
-template <typename key_T, typename mapped_T>
-class bstmap<key_T, mapped_T>::Node {
-public:
-  typedef pair<const key_T, mapped_T> value_type;
-
-  Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
-    value_m(val), parent_m(parent), left_m(left), right_m(right) {}
-
-/// internal implementation
-public:
-  value_type value_m;
-  Node* parent_m;
-  Node* left_m;
-  Node* right_m;
 };
