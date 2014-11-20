@@ -34,20 +34,23 @@ private:
   Node* root_m;
 
 public:
-  class iterator {
+  template<typename pointer_T, typename reference_T> 
+  /// can't figure out how to get rid of the second one 
+  
+  class _iterator {
   public:
     typedef input_iterator_tag iterator_category;
     // typedef value_type value_type;
     // typedef dfference_type difference_type;
-    typedef value_type* pointer;
-    typedef value_type& reference;
+    typedef pointer_T pointer;
+    typedef reference_T reference;
 
-    //friend class bstmap;
+    friend class bstmap;
 
-    iterator(Node* n = NULL) : node_m(n) {}
-    iterator(const iterator& x) : node_m(x.node_m) {}
+    _iterator(Node* n = NULL) : node_m(n) {}
+    _iterator(const _iterator& x) : node_m(x.node_m) {}
     
-    iterator& operator=(iterator& x) {
+    _iterator& operator=(_iterator& x) {
       node_m = x.node_m;
       return *this;
     }
@@ -60,32 +63,32 @@ public:
       return &(node_m->value_m);
     }
 
-    bool operator==(const iterator& x) {
+    bool operator==(const _iterator& x) {
       return (node_m == x.node_m);
     }
 
-    bool operator!=(const iterator& x) {
+    bool operator!=(const _iterator& x) {
       return (node_m != x.node_m);
     }
 
-    iterator& operator++() {
+    _iterator& operator++() {
       ++(*this);
       return this;
     }
 
-    iterator& operator++(int) {
-      iterator temp = *this;
+    _iterator& operator++(int) {
+      _iterator temp = *this;
       ++(*this);
       return temp;
     }
 
-    iterator& operator--() {
+    _iterator& operator--() {
       --(*this);
       return this;
     }
     
-    iterator& operator--(int) {
-      iterator temp = *this;
+    _iterator& operator--(int) {
+      _iterator temp = *this;
       --(*this);
       return temp;
     }
@@ -93,9 +96,10 @@ public:
     Node* node_m;
   };
   
-  class const_iterator {
-    // like iterator, but points to a const
-  };
+  typedef _iterator<value_type*, value_type&> iterator;
+  typedef _iterator<const value_type*, const value_type&> const_iterator;
+
+
 
 public:
   // default constructor to create an empty map
