@@ -99,8 +99,6 @@ public:
   typedef _iterator<value_type*, value_type&> iterator;
   typedef _iterator<const value_type*, const value_type&> const_iterator;
 
-
-
 public:
   // default constructor to create an empty map
   bstmap() : root_m(NULL) {}
@@ -120,15 +118,27 @@ public:
   // accessors:
   iterator begin() {
     // return iterator(this, leftmost_element())
+    return iterator(_leftmost_node());
   }
   const_iterator begin() const {
     //have to return const_iterator
   }
   iterator end() {
     //wraper of null??
+    if (empty()) {
+      return begin();
+    }
+    return iterator(NULL);
   }
-  const_iterator end() const {}
-  bool Empty() const {}
+
+  const_iterator end() const {
+    
+  }
+
+  bool empty() const {
+    return root_m == NULL;
+  }
+
   size_type size() const {}
 
   // insert/erase
@@ -168,19 +178,13 @@ public:
 
 
   value_type& min() {
-    Node* head = root_m;
-
-    // if (head == NULL) {
-
-    // }
-    while (head->left_m != NULL) {
-      head = head->left_m;
-    }
-
-    return head->value_m;
+    return _leftmost_node()->value_m;
   }
 
-
+  value_type& max() {
+    return _rightmost_node()->value_m;
+  }
+  
 private:
   pair<Node*, bool> _find(const value_type& val, Node* subtree, Node* parent = NULL) const {
     if (subtree == NULL) {
@@ -197,4 +201,28 @@ private:
       return _find(val, subtree->right_m, subtree);
     }
   }
+
+  Node* _leftmost_node() {
+    Node* head = root_m;
+
+    if (head != NULL) {
+      while (head->left_m != NULL) {
+	head = head->left_m;
+      }
+    }
+    return head;    
+  }
+
+  Node* _rightmost_node() {
+    Node* head = root_m;
+    
+    if (head == NULL) {
+      while (head->right_m != NULL) {
+	head = head->right_m;
+      }
+    }
+
+    return head;
+  }
+
 };
