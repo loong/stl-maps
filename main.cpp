@@ -14,6 +14,7 @@ int main() {
 
   cout << map.min().first << endl;
   cout << map.min().second << endl;
+  cout << map.size() << endl;
 
   bstmap<string, int>::iterator it;
 }

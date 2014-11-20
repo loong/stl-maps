@@ -126,8 +126,11 @@ public:
     //wraper of null??
   }
   const_iterator end() const {}
-  bool Empty() const {}
-  size_type size() const {}
+  bool empty() const {}
+
+  size_type size() const {
+    return _size(root_m);
+  }
 
   // insert/erase
   pair<iterator, bool> insert(const value_type& x) {
@@ -156,6 +159,7 @@ public:
 
   void erase(iterator pos) {}
   size_type erase(const Key& x) {}
+  
   void clear() {
     _recursive_delete(root_m);
   }
@@ -212,5 +216,13 @@ private:
     } 
 
     delete n;
+  }
+
+  size_type _size(Node* n) const {
+    if (n == NULL) {
+      return 0;
+    }
+
+    return 1 + _size(n->left_m) + _size(n->right_m);
   }
 };
