@@ -23,8 +23,6 @@ private:
     Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
       value_m(val), parent_m(parent), left_m(left), right_m(right) {}
 
-    /// internal implementation
-  public:
     value_type value_m;
     Node* parent_m;
     Node* left_m;
@@ -99,13 +97,13 @@ public:
   typedef _iterator<value_type*, value_type&> iterator;
   typedef _iterator<const value_type*, const value_type&> const_iterator;
 
-
-
 public:
   // default constructor to create an empty map
   bstmap() : root_m(NULL) {}
 
-  // recursive destruction
+  ~bstmap() {
+    clear();
+  }
 
   // overload copy constructor to do a deep copy
   bstmap(const Self& x) {
@@ -158,7 +156,9 @@ public:
 
   void erase(iterator pos) {}
   size_type erase(const Key& x) {}
-  void clear() {}
+  void clear() {
+    _recursive_delete(root_m);
+  }
 
   // map operations:
   iterator find(const Key& x) {}
@@ -196,5 +196,21 @@ private:
     else {
       return _find(val, subtree->right_m, subtree);
     }
+  }
+
+  void _recursive_delete(Node* n) {
+    if (n == NULL) {
+      cout << "Logic Error" << endl;
+    }
+
+    if (n->left_m != NULL) {
+      delete n->left_m;
+    }
+    
+    if (n->right_m != NULL) {
+      delete n->right_m;
+    } 
+
+    delete n;
   }
 };
