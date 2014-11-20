@@ -162,6 +162,21 @@ public:
   size_type count(const Key& x) const {}
   T& operator[](const Key& k) {}
 
+
+  value_type& min() {
+    Node* head = root_m;
+
+    // if (head == NULL) {
+
+    // }
+    while (head->left_m != NULL) {
+      head = head->left_m;
+    }
+
+    return head->value_m;
+  }
+
+
 private:
   pair<Node*, bool> _find(const value_type& val, Node* subtree, Node* parent = NULL) const {
     if (subtree == NULL) {
@@ -172,11 +187,10 @@ private:
       return pair<Node*, bool>(subtree, true);
     }
     else if (subtree->value_m.second > val.second) {
-      return _find(val, subtree->left_m, subtree->parent_m);
+      return _find(val, subtree->left_m, subtree);
     }
     else {
-      return _find(val, subtree->right_m, subtree->parent_m);
+      return _find(val, subtree->right_m, subtree);
     }
   }
-
 };
