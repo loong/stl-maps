@@ -34,14 +34,14 @@ private:
 public:
 
   /// can't figure out how to get rid of the second one 
-  template<typename pointer_T, typename reference_T> 
+  template <typename _T>
   class _iterator {
   public:
     typedef input_iterator_tag iterator_category;
-    // typedef value_type value_type;
-    // typedef dfference_type difference_type;
-    typedef pointer_T pointer;
-    typedef reference_T reference;
+    typedef _T value_type;
+    typedef int difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
 
     friend class bstmap;
 
@@ -69,7 +69,6 @@ public:
       return (node_m != x.node_m);
     }
 
-    // to lazy to return it by reference 
     _iterator& operator++() {
       node_m = _successor(node_m);
       return *this;
@@ -84,8 +83,8 @@ public:
     Node* node_m;
   };
   
-  typedef _iterator<value_type*, value_type&> iterator;
-  typedef _iterator<const value_type*, const value_type&> const_iterator;
+  typedef _iterator<value_type> iterator;
+  typedef _iterator<const value_type> const_iterator;
 
 public:
   // default constructor to create an empty map
@@ -97,7 +96,11 @@ public:
 
   // overload copy constructor to do a deep copy
   bstmap(const Self& x) {
-    // use simple for with iterator to insert/ copy the new nodes
+    root_m = x.root_m; // Why doesn't it work without that!?
+
+    for (const_iterator i = x.begin(); i != x.end(); ++i) {
+      insert(*i);
+    }
   }
 
   // overload assignment to do a deep copy
@@ -107,7 +110,7 @@ public:
 
   // accessors:
   iterator begin() {
-    return iterator(_leftmost_node(root_m));
+    return iterator(_leftmost_node());
   }
 
   const_iterator begin() const {
@@ -140,7 +143,7 @@ public:
 
   // insert/erase
   pair<iterator, bool> insert(const value_type& x) {
-    pair<Node*, bool> res =_find(x.first, root_m);
+    pair<Node*, bool> res = _find(x.first, root_m);
 
     if (res.second == true) {  // means value is already in tree
       return pair<iterator, bool>(iterator(res.first), false);
@@ -204,20 +207,29 @@ public:
   }
 
   T& operator[](const Key& k) {
+    iterator it = find(k);
     
+    if (it != end()) {   // found key
+      return (*it).second;
+    }
+    else {               // not found -> create empty
+      insert( value_type(k, T()));
+      return operator[](k);   // a bit ugly
+    }
   }
 
   value_type& min() {
-    return _leftmost_node(root_m)->value_m;
+    return _leftmost_node()->value_m;
   }
 
   value_type& max() {
-    return _rightmost_node(root_m)->value_m;
+    return _rightmost_node()->value_m;
   }
   
 public:
 
   /**
+   * \return Node* nearest node to found
    * \return bool true if found
    */
   pair<Node*, bool> _find(const key_type& key, Node* subtree, Node* parent = NULL) const {
@@ -236,7 +248,11 @@ public:
     }
   }
 
-  static Node* _leftmost_node(Node* subtree) {
+private:
+
+  Node* _leftmost_node() const { return _leftmost_rec(root_m); }
+
+  static Node* _leftmost_rec(Node* subtree) {
     if (subtree != NULL) {
       while (subtree->left_m != NULL) {
 	subtree = subtree->left_m;
@@ -245,7 +261,7 @@ public:
     return subtree;
   }
 
-  static Node* _rightmost_node(Node* subtree) {    
+  static const Node* _rightmost_node(const Node* subtree) {    
     if (subtree == NULL) {
       while (subtree->right_m != NULL) {
 	subtree = subtree->right_m;
@@ -257,7 +273,7 @@ public:
 
   static Node* _successor(Node* n) {
     if (n->right_m != NULL) {
-      return _leftmost_node(n->right_m);
+      return _leftmost_rec(n->right_m);
     }
     else {
       Node* pos = n;

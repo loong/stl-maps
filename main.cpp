@@ -14,7 +14,7 @@ int main() {
   map.insert(pair<int, string>(2, "two"));
   map.insert(pair<int, string>(1, "one"));
   map.insert(pair<int, string>(3, "three"));
-  //  map.insert(pair<int, string>(12, "twelve"));
+  map.insert(pair<int, string>(12, "twelve"));
 
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
@@ -26,9 +26,19 @@ int main() {
   cout << "Find 3:\t" << map.find(3)->second << endl;
   cout << "Find 4:\t"  << (map.find(4) == map.end()) << endl;
 
-  bstmap<int, int>::iterator it;
+  Map map2(map); // Copy constructor
+  
+  cout << "Find2 10:\t" << map2.find(10)->second << endl;
+  cout << "Find2 3:\t" << map2.find(3)->second << endl;
+  cout << "Find2 4:\t"  << (map2.find(4) == map.end()) << endl;
 
-  for (Map::iterator i = map.begin(); i != map.end(); ++i) {
+  map2[11] = "eleven";
+
+  cout << "map[2]\t"  << map2[2]  << endl;
+  cout << "map[11]\t" << map2[11] << endl;
+  
+
+    /*for (Map::iterator i = map.begin(); i != map.end(); ++i) {
     cout << (*i).second << endl;
-  }
+    }*/
 }
