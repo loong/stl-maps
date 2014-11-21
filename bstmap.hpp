@@ -8,6 +8,12 @@
 
 using namespace std;
 
+/**
+ * \class bstmap
+ *
+ * \brief bstmap is a template, which implements a binary search
+ *        tree. It follows STL idiom for easy plug and play
+ */
 template <class Key, class T>
 class bstmap
 {
@@ -21,7 +27,14 @@ public:
   typedef int                difference_type;
 
 private:
-  class Node  {
+  /**
+   * \class Node
+   *
+   * \brief Holds value (which is a keypair). Has two child
+   *        (BinaryTree), but also point to * the parent for easier
+   *        implementation
+   */
+  class Node {
   public:
     Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
       value_m(val), parent_m(parent), left_m(left), right_m(right) {}
@@ -34,19 +47,24 @@ private:
 
   Node* root_m;
 
-public:
-
-  /// can't figure out how to get rid of the second one 
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Iterators
+  ////////////////////////////////////////////////////////////////////////////////
+public: 
+  /**
+   * \brief Template in order to create iterator and const_iterator
+   *        without copy pasting
+   */
   template <typename _T>
   class _iterator {
+    friend class bstmap;
+
   public:
     typedef input_iterator_tag iterator_category;
     typedef _T value_type;
     typedef int difference_type;
     typedef value_type* pointer;
     typedef value_type& reference;
-
-    friend class bstmap;
 
     _iterator(Node* n = NULL) : node_m(n) {}
     _iterator(const _iterator& x) : node_m(x.node_m) {}
@@ -90,28 +108,51 @@ public:
   typedef _iterator<const value_type> const_iterator;
 
 public:
-  // default constructor to create an empty map
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Constructors, Destructor, Assignment
+  ////////////////////////////////////////////////////////////////////////////////
+
   bstmap() : root_m(NULL) {}
 
   ~bstmap() {
     clear();
   }
 
-  // overload copy constructor to do a deep copy
+  /**
+   * \brief overloads copy constructor for deep copy
+   */
   bstmap(const Self& x) {
-    root_m = x.root_m; // Why doesn't it work without that!?
+    root_m = x.root_m; /// \todo Why doesn't it work without that!?
 
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
-      insert(*i);
+      insert(*i);      /// insert one by one, which will be aweful for
+		       /// the treestructure
     }
   }
 
-  // overload assignment to do a deep copy
+  /**
+   * \brief overloads assignment for deep copy
+   */
   Self& operator=(const Self& x) {
     // guard against self assignment
+    if (this == &x) {
+      return *this;
+    }
+    
+    clear();
+    
+    root_m = x.root_m; /// \todo Why doesn't it work without that!?
+
+    for (const_iterator i = x.begin(); i != x.end(); ++i) {
+      insert(*i);      /// insert one by one, which will be aweful for
+		       /// the treestructure
+    }
   }
 
-  // accessors:
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Accessors
+  ////////////////////////////////////////////////////////////////////////////////
+
   iterator begin() {
     return iterator(leftmost_node());
   }
@@ -125,15 +166,15 @@ public:
       return begin();
     }
 
-    return iterator(NULL);
+    return iterator(NULL); // basically a wraper around NULL
   }
 
   const_iterator end() const {
     if (empty()) {
       return begin();
     }
-
-    return const_iterator(NULL);
+    
+    return const_iterator(NULL); // basically a wraper around NULL
   }
 
   bool empty() const {
@@ -144,7 +185,10 @@ public:
     return _size(root_m);
   }
 
-  // insert/erase
+  /**
+   * \return pair<iterator, bool> iterator to node in tree, bool is
+   *         true if an insertion has been done
+   */
   pair<iterator, bool> insert(const value_type& x) {
     pair<Node*, bool> res = _find(x.first, root_m);
 
@@ -175,6 +219,7 @@ public:
     }
 
     Node* n = pos.node_m;
+    Node* parent = n->parent_m;
     
     if (n == NULL) {
       return;
@@ -182,12 +227,11 @@ public:
 
     // Case 3: x has 2 childs
     if (n->left_m != NULL && n->right_m != NULL) {
-      cout << "Case 3" << endl;
 
       Node* successor = _successor(n);
 
       // replace to deleted node with successor
-      Node* _parent = n->parent_m;
+      Node* _parent = parent;
       Node* _left = n->left_m;
       Node* _right = n->right_m;
 
@@ -197,54 +241,49 @@ public:
       // delete original successor
       erase(iterator(successor));
 
-      return;
-    }
-    
-    // Case 1: x is a leaf
-    if (n->left_m == NULL && n->right_m == NULL) {
-      cout << "Case 1" << endl;
+    } 
+    else if (n->left_m == NULL && n->right_m == NULL) {
 
-      Node* parent = n->parent_m;
-
+      // Case 1: x is a leaf
       if (parent->left_m == n) {
 	parent->left_m = NULL;
       }
       else {
 	parent->right_m = NULL;
       }
+
+      delete n;
+
+    } else {
+
+      // Case 2: x has exactly one child
+      Node* child = n->left_m;
+      if (child == NULL) {
+	child = n->right_m;
+      }
       
-      return;
-    }
-
-    // Case 2: x has exactly one child
-    cout << "Case 2" << endl;
-    Node* child = n->left_m;
-    if (child == NULL) {
-      child = n->right_m;
-    }
-
-    // special case: deleting root
-    Node* parent = n->parent_m;
-    if (n == root_m) {
-      root_m = child;
-    }
-    else {
-      if (n == parent->left_m) {
-	parent->left_m = child;
+      // special case: deleting root
+      if (n == root_m) {
+	root_m = child;
       }
       else {
-	parent->right_m = child;
+	if (n == parent->left_m) {
+	  parent->left_m = child;
+	}
+	else {
+	  parent->right_m = child;
+	}
       }
+      
+      delete n;
     }
-
-    delete n;
-
+    
     return;
   }
   
   size_type erase(const Key& x) {
     iterator it = find(x);
-
+    
     if (it == end()) { // Key not found
       return 0;
     }
@@ -256,6 +295,7 @@ public:
   
   void clear() {
     _recursive_delete(root_m);
+    root_m = NULL;
   }
 
   // map operations:
@@ -333,8 +373,13 @@ public:
     }
   }
 
+  
 private:
 
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Helpers
+  ////////////////////////////////////////////////////////////////////////////////
+  
   /**
    * \brief used as const wrapper for global calls
    */
@@ -349,6 +394,9 @@ private:
     return _rightmost_rec(root_m); 
   }
 
+  /**
+   * \brief get the left most, generalized so it can run on any subtree
+   */
   static Node* _leftmost_rec(Node* subtree) {
     if (subtree != NULL) {
       while (subtree->left_m != NULL) {
@@ -358,8 +406,12 @@ private:
     return subtree;
   }
 
+
+  /**
+   * \brief get the right most, generalized so it can run on any subtree
+   */
   static Node* _rightmost_rec(Node* subtree) {    
-    if (subtree == NULL) {
+    if (subtree != NULL) {
       while (subtree->right_m != NULL) {
 	subtree = subtree->right_m;
       }
@@ -368,6 +420,9 @@ private:
     return subtree;
   }
 
+  /**
+   * \brief get successor for any node
+   */
   static Node* _successor(Node* n) {
     if (n->right_m != NULL) {
       return _leftmost_rec(n->right_m);
@@ -384,9 +439,12 @@ private:
     }
   }
 
+  /**
+   * \brief use this for tree-wise deletion, NOT for single deletion!
+   */
   static void _recursive_delete(Node* n) {
     if (n == NULL) {
-      cout << "Logic Error" << endl;
+      return;
     }
 
     if (n->left_m != NULL) {
@@ -400,6 +458,9 @@ private:
     delete n;
   }
 
+  /**
+   * \brief get size recursively
+   */
   static size_type _size(Node* n) {
     if (n == NULL) {
       return 0;

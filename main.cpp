@@ -19,8 +19,10 @@ int main() {
   map.insert(pair<int, string>(2, "two"));
   map.insert(pair<int, string>(1, "one"));
   map.insert(pair<int, string>(3, "three"));
-  map.insert(pair<int, string>(12, "twelve"));
-
+  
+  cout << "insert new\t";
+  cout << map.insert(pair<int, string>(12, "twelve")).second << endl;
+  cout << "insert again\t";
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
 #ifndef USE_STD
@@ -28,17 +30,19 @@ int main() {
   cout << "Max:\t" << map.max().first << endl;
 #endif
   
-  cout << map.size() << endl;
+  cout << "map size  " << map.size() << endl;
+  cout << "is empty? " << map.empty() << endl;
 
   cout << "Find 10:\t" << map.find(10)->second << endl;
-  cout << "Find 3:\t" << map.find(3)->second << endl;
-  cout << "Find 4:\t"  << (map.find(4) == map.end()) << endl;
+  cout << "Find 3:\t\t" << map.find(3)->second << endl;
+  cout << "Can find 4?\t"  << (map.find(4) == map.end()) << endl;
 
+  cout << "-------------------" << endl;
   Map map2(map); // Copy constructor
   
-  cout << "Find2 10:\t" << map2.find(10)->second << endl;
-  cout << "Find2 3:\t" << map2.find(3)->second << endl;
-  cout << "Find2 4:\t"  << (map2.find(4) == map.end()) << endl;
+  cout << "Find2 10:\t"    << map2.find(10)->second << endl;
+  cout << "Find2 3:\t"     << map2.find(3)->second << endl;
+  cout << "Can find2 4?\t" << (map2.find(4) == map.end()) << endl;
 
   map2[11] = "eleven";
 
@@ -65,7 +69,24 @@ int main() {
     cout << "del map\t" << (*i).second << endl;
   }
 
-  Map empty;
+  del_map.clear();
+
+  cout << "is empty? " << del_map.empty() << endl;
+
+  cout << "-------------------" << endl;
   
-  del_map.erase(empty.begin());
+  bstmap<char,int> first;
+  bstmap<char,int> second;
+
+  first['x']=8;
+  first['y']=16;
+  first['z']=32;
+
+  second=first;              // second now contains 3 ints
+  first=bstmap<char,int>();  // and first is now empty
+
+  cout << "Size of first: " << first.size() << '\n';   // prints 0
+  cout << "Size of second: " << second.size() << '\n'; // prints 3
+
+  cout << "-------------------" << endl;
 }
