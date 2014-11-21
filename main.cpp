@@ -1,12 +1,17 @@
 #include "bstmap.hpp"
 
+#include <map>
 #include <iostream>
 #include <string>
 #include <utility>
 
 using namespace std;
 
+#ifndef USE_STD
 typedef bstmap<int, string> Map;
+#else
+typedef map<int, string> Map;
+#endif
 
 int main() {
   Map map;
@@ -18,8 +23,11 @@ int main() {
 
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
-  cout << map.min().first << endl;
-  cout << map.min().second << endl;
+#ifndef USE_STD
+  cout << "Min:\t" << map.min().first << endl;
+  cout << "Max:\t" << map.max().first << endl;
+#endif
+  
   cout << map.size() << endl;
 
   cout << "Find 10:\t" << map.find(10)->second << endl;
@@ -56,4 +64,8 @@ int main() {
   for (Map::iterator i = del_map.begin(); i != del_map.end(); ++i) {
     cout << "del map\t" << (*i).second << endl;
   }
+
+  Map empty;
+  
+  del_map.erase(empty.begin());
 }

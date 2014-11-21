@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include <cassert>
+#include <stdexcept>
 
 using namespace std;
 
@@ -112,11 +113,11 @@ public:
 
   // accessors:
   iterator begin() {
-    return iterator(_leftmost_node());
+    return iterator(leftmost_node());
   }
 
   const_iterator begin() const {
-    return const_iterator(_leftmost_node());
+    return const_iterator(leftmost_node());
   }
 
   iterator end() {
@@ -168,8 +169,10 @@ public:
     return pair<iterator, bool>(iterator(new_node), true);
   }
 
-  void erase(iterator pos) {
-    assert(pos != NULL);
+  void erase(iterator pos) throw (runtime_error) {
+    if (pos == NULL) {
+      throw runtime_error("Cannot erase Null iterator");
+    }
 
     Node* n = pos.node_m;
     
@@ -301,11 +304,11 @@ public:
   }
 
   value_type& min() {
-    return _leftmost_node()->value_m;
+    return leftmost_node()->value_m;
   }
 
   value_type& max() {
-    return _rightmost_node()->value_m;
+    return rightmost_node()->value_m;
   }
   
 public:
@@ -332,7 +335,19 @@ public:
 
 private:
 
-  Node* _leftmost_node() const { return _leftmost_rec(root_m); }
+  /**
+   * \brief used as const wrapper for global calls
+   */
+  Node* leftmost_node() const { 
+    return _leftmost_rec(root_m); 
+  }
+
+  /**
+   * \brief used as const wrapper for global calls
+   */
+  Node* rightmost_node() const { 
+    return _rightmost_rec(root_m); 
+  }
 
   static Node* _leftmost_rec(Node* subtree) {
     if (subtree != NULL) {
@@ -343,7 +358,7 @@ private:
     return subtree;
   }
 
-  static const Node* _rightmost_node(const Node* subtree) {    
+  static Node* _rightmost_rec(Node* subtree) {    
     if (subtree == NULL) {
       while (subtree->right_m != NULL) {
 	subtree = subtree->right_m;
