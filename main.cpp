@@ -36,9 +36,24 @@ int main() {
 
   cout << "map[2]\t"  << map2[2]  << endl;
   cout << "map[11]\t" << map2[11] << endl;
-  
 
-    /*for (Map::iterator i = map.begin(); i != map.end(); ++i) {
-    cout << (*i).second << endl;
-    }*/
+  cout << "-----------------" << endl;
+  
+  Map del_map;
+
+  del_map.insert(pair<int, string>(10, "ten"));
+  del_map.insert(pair<int, string>(5, "five"));
+  del_map.insert(pair<int, string>(2, "two"));
+  del_map.insert(pair<int, string>(13, "thirteen"));
+  del_map.insert(pair<int, string>(3, "three"));
+  del_map.insert(pair<int, string>(2, "two"));
+  del_map.insert(pair<int, string>(11, "eleven"));
+  del_map.insert(pair<int, string>(7, "seven"));
+
+  del_map.erase(10);
+  del_map.erase(2);
+
+  for (Map::iterator i = del_map.begin(); i != del_map.end(); ++i) {
+    cout << "del map\t" << (*i).second << endl;
+  }
 }

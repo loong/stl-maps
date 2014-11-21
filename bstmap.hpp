@@ -3,6 +3,8 @@
 #include <iterator>
 #include <iostream>
 
+#include <cassert>
+
 using namespace std;
 
 template <class Key, class T>
@@ -166,8 +168,88 @@ public:
     return pair<iterator, bool>(iterator(new_node), true);
   }
 
-  void erase(iterator pos) {}
-  size_type erase(const Key& x) {}
+  void erase(iterator pos) {
+    assert(pos != NULL);
+
+    Node* n = pos.node_m;
+    
+    if (n == NULL) {
+      return;
+    }
+
+    // Case 3: x has 2 childs
+    if (n->left_m != NULL && n->right_m != NULL) {
+      cout << "Case 3" << endl;
+
+      Node* successor = _successor(n);
+
+      // replace to deleted node with successor
+      Node* _parent = n->parent_m;
+      Node* _left = n->left_m;
+      Node* _right = n->right_m;
+
+      delete n;
+      n = new Node(successor->value_m, _parent, _left, _right);
+      
+      // delete original successor
+      erase(iterator(successor));
+
+      return;
+    }
+    
+    // Case 1: x is a leaf
+    if (n->left_m == NULL && n->right_m == NULL) {
+      cout << "Case 1" << endl;
+
+      Node* parent = n->parent_m;
+
+      if (parent->left_m == n) {
+	parent->left_m = NULL;
+      }
+      else {
+	parent->right_m = NULL;
+      }
+      
+      return;
+    }
+
+    // Case 2: x has exactly one child
+    cout << "Case 2" << endl;
+    Node* child = n->left_m;
+    if (child == NULL) {
+      child = n->right_m;
+    }
+
+    // special case: deleting root
+    Node* parent = n->parent_m;
+    if (n == root_m) {
+      root_m = child;
+    }
+    else {
+      if (n == parent->left_m) {
+	parent->left_m = child;
+      }
+      else {
+	parent->right_m = child;
+      }
+    }
+
+    delete n;
+
+    return;
+  }
+  
+  size_type erase(const Key& x) {
+    iterator it = find(x);
+
+    if (it == end()) { // Key not found
+      return 0;
+    }
+
+    erase(it);
+
+    return 1; // since Key in maps are unique, can only be 1
+  }
   
   void clear() {
     _recursive_delete(root_m);
@@ -310,6 +392,5 @@ private:
 
     return 1 + _size(n->left_m) + _size(n->right_m);
   }
-
 
 };
