@@ -1,3 +1,6 @@
+#ifndef BSTMAP_HPP
+#define BSTMAP_HPP
+
 #include <utility>
 #include <cstddef>
 #include <iterator>
@@ -69,7 +72,7 @@ public:
     _iterator(Node* n = NULL) : node_m(n) {}
     _iterator(const _iterator& x) : node_m(x.node_m) {}
     
-    _iterator& operator=(_iterator& x) {
+    _iterator& operator=(const _iterator& x) {
       node_m = x.node_m;
       return *this;
     }
@@ -121,8 +124,8 @@ public:
   /**
    * \brief overloads copy constructor for deep copy
    */
-  bstmap(const Self& x) {
-    root_m = x.root_m; /// \todo Why doesn't it work without that!?
+  bstmap(const Self& x) : root_m(NULL) {
+    insert(x.root_m->value_m);
 
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
@@ -344,10 +347,16 @@ public:
   }
 
   value_type& min() {
+    if (empty()) {
+      throw runtime_error("Map is empty");
+    }
     return leftmost_node()->value_m;
   }
 
   value_type& max() {
+    if (empty()) {
+      throw runtime_error("Map is empty");
+    }
     return rightmost_node()->value_m;
   }
   
@@ -470,3 +479,5 @@ private:
   }
 
 };
+
+#endif

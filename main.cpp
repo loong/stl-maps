@@ -19,9 +19,13 @@ int main() {
   map.insert(pair<int, string>(2, "two"));
   map.insert(pair<int, string>(1, "one"));
   map.insert(pair<int, string>(3, "three"));
-  
+
+  /// \todo here is still a hidden error la
+  pair<Map::iterator, bool> ret;
+  ret = map.insert(pair<int, string>(12, "twelve"));
+
   cout << "insert new\t";
-  cout << map.insert(pair<int, string>(12, "twelve")).second << endl;
+  cout << ret.second << endl;
   cout << "insert again\t";
   cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
 
@@ -71,8 +75,9 @@ int main() {
 
   del_map.clear();
 
-  cout << "is empty? " << del_map.empty() << endl;
-
+  cout << "is empty?  " << del_map.empty() << endl;
+  cout << "size       " << del_map.size() << endl;
+  //cout << "min / max  " << del_map.min().second << " " << del_map.max().first << endl;
   cout << "-------------------" << endl;
   
   bstmap<char,int> first;
