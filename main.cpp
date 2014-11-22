@@ -66,10 +66,13 @@ int main() {
   del_map.insert(pair<int, string>(11, "eleven"));
   del_map.insert(pair<int, string>(7, "seven"));
 
-  del_map.erase(10);
-  del_map.erase(2);
+  del_map.erase(13);
+  del_map.insert(pair<int, string>(13, "thirteen"));
 
   for (Map::iterator i = del_map.begin(); i != del_map.end(); ++i) {
+    if ((*i).second.empty()) {
+      cout << "second is empty" << endl;
+    }
     cout << "del map\t" << (*i).second << endl;
   }
 
@@ -88,6 +91,7 @@ int main() {
   first['z']=32;
 
   second=first;              // second now contains 3 ints
+
   first=bstmap<char,int>();  // and first is now empty
 
   cout << "Size of first: " << first.size() << '\n';   // prints 0

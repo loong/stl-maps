@@ -39,8 +39,17 @@ private:
    */
   class Node {
   public:
-    Node (value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
+    Node(value_type val, Node* parent = NULL,  Node* left = NULL, Node* right = NULL) :
       value_m(val), parent_m(parent), left_m(left), right_m(right) {}
+
+    /**
+     * \brief sets to NULL to prevent OS to reuse garbage
+     */
+    ~Node() {
+      parent_m = NULL;
+      left_m = NULL;
+      right_m = NULL;
+    }
 
     value_type value_m;
     Node* parent_m;
@@ -125,7 +134,7 @@ public:
    * \brief overloads copy constructor for deep copy
    */
   bstmap(const Self& x) : root_m(NULL) {
-    insert(x.root_m->value_m);
+    // insert(x.root_m->value_m);
 
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
@@ -141,15 +150,15 @@ public:
     if (this == &x) {
       return *this;
     }
-    
+
     clear();
     
-    root_m = x.root_m; /// \todo Why doesn't it work without that!?
+    //root_m = x.root_m; /// \todo Why doesn't it work without that!?
 
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
 		       /// the treestructure
-    }
+		       }
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +239,7 @@ public:
 
     // Case 3: x has 2 childs
     if (n->left_m != NULL && n->right_m != NULL) {
-
+      cout << "Case 3" << endl;
       Node* successor = _successor(n);
 
       // replace to deleted node with successor
@@ -246,7 +255,7 @@ public:
 
     } 
     else if (n->left_m == NULL && n->right_m == NULL) {
-
+      cout << "Case 1" << endl;
       // Case 1: x is a leaf
       if (parent->left_m == n) {
 	parent->left_m = NULL;
@@ -258,10 +267,12 @@ public:
       delete n;
 
     } else {
+      cout << "Case 2" << endl;
 
       // Case 2: x has exactly one child
       Node* child = n->left_m;
       if (child == NULL) {
+	cout << "right child" << endl;
 	child = n->right_m;
       }
       
@@ -271,12 +282,16 @@ public:
       }
       else {
 	if (n == parent->left_m) {
+	  cout << "left" << endl;
 	  parent->left_m = child;
 	}
 	else {
+	  cout << "right" << endl;
 	  parent->right_m = child;
 	}
       }
+
+      child->parent_m = parent;
       
       delete n;
     }
