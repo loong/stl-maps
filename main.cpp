@@ -14,39 +14,39 @@ typedef map<int, string> Map;
 #endif
 
 int main() {
-  Map map;
-  map.insert(pair<int, string>(10, "ten"));
-  map.insert(pair<int, string>(2, "two"));
-  map.insert(pair<int, string>(1, "one"));
-  map.insert(pair<int, string>(3, "three"));
+  Map* map = new Map();
+  map->insert(pair<int, string>(10, "ten"));
+  map->insert(pair<int, string>(2, "two"));
+  map->insert(pair<int, string>(1, "one"));
+  map->insert(pair<int, string>(3, "three"));
 
   /// \todo here is still a hidden error la
   pair<Map::iterator, bool> ret;
-  ret = map.insert(pair<int, string>(12, "twelve"));
+  ret = map->insert(pair<int, string>(12, "twelve"));
 
   cout << "insert new\t";
   cout << ret.second << endl;
   cout << "insert again\t";
-  cout << map.insert(pair<int, string>(3, "asdf")).second << endl;
+  cout << map->insert(pair<int, string>(3, "asdf")).second << endl;
 
 #ifndef USE_STD
-  cout << "Min:\t" << map.min().first << endl;
-  cout << "Max:\t" << map.max().first << endl;
+  cout << "Min:\t" << map->min().first << endl;
+  cout << "Max:\t" << map->max().first << endl;
 #endif
   
-  cout << "map size  " << map.size() << endl;
-  cout << "is empty? " << map.empty() << endl;
+  cout << "map size  " << map->size() << endl;
+  cout << "is empty? " << map->empty() << endl;
 
-  cout << "Find 10:\t" << map.find(10)->second << endl;
-  cout << "Find 3:\t\t" << map.find(3)->second << endl;
-  cout << "Can find 4?\t"  << (map.find(4) == map.end()) << endl;
+  cout << "Find 10:\t" << map->find(10)->second << endl;
+  cout << "Find 3:\t\t" << map->find(3)->second << endl;
+  cout << "Can find 4?\t"  << (map->find(4) == map->end()) << endl;
 
   cout << "-------------------" << endl;
-  Map map2(map); // Copy constructor
+  Map map2(*map); // Copy constructor
   
   cout << "Find2 10:\t"    << map2.find(10)->second << endl;
   cout << "Find2 3:\t"     << map2.find(3)->second << endl;
-  cout << "Can find2 4?\t" << (map2.find(4) == map.end()) << endl;
+  cout << "Can find2 4?\t" << (map2.find(4) == map2.end()) << endl;
 
   map2[11] = "eleven";
 

@@ -346,14 +346,14 @@ public:
     }
   }
 
-  value_type& min() {
+  value_type& min() throw (runtime_error) {
     if (empty()) {
       throw runtime_error("Map is empty");
     }
     return leftmost_node()->value_m;
   }
 
-  value_type& max() {
+  value_type& max() throw (runtime_error) {
     if (empty()) {
       throw runtime_error("Map is empty");
     }
@@ -456,15 +456,11 @@ private:
       return;
     }
 
-    if (n->left_m != NULL) {
-      delete n->left_m;
-    }
+    _recursive_delete(n->right_m);
+    _recursive_delete(n->left_m);  
     
-    if (n->right_m != NULL) {
-      delete n->right_m;
-    } 
-
     delete n;
+    n = NULL;
   }
 
   /**
