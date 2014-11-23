@@ -1,9 +1,9 @@
 /// \todo Make number of buckets variable!
-#define NO_BUCKETS 389 //10 000th prime
+#define NO_BUCKETS 3 //389 //10 000th prime
 
 #include <cstddef>
 #include <sstream>
-#include <list>
+#include <map>
 
 using namespace std;
 
@@ -20,7 +20,7 @@ public:
   typedef unsigned int       size_type;
   typedef int                difference_type;
   
-  typedef list<value_type>   bucket_type;
+  typedef map<key_type, mapped_type> bucket_type;
   
   bucket_type buckets[NO_BUCKETS];
   
@@ -86,13 +86,25 @@ public:
   size_type size() const {}
 
   // insert/erase
-  pair<iterator,bool> insert(const value_type& x) {}
+  pair<iterator,bool> insert(const value_type& x) {
+    buckets[_hash(x.first)].insert(x);
+  }
+
   void erase(iterator pos) {}
   size_type erase(const Key& x) {}
   void clear() {}
 
   // map operations:
-  iterator find(const Key& x) {}
+  iterator find(const Key& x) {
+    bucket_type b = buckets[_hash(x)];
+    typename bucket_type::iterator it = b.find(x);
+
+    if (it == b.end()) {
+      cout << "not found" << endl;
+    }
+
+    cout << "found" << endl;
+  }
   const_iterator find(const Key& x) const {}
   size_type count(const Key& x) const {}
   T& operator[](const Key& k) {}
@@ -103,11 +115,10 @@ private:
     ss << k;
 
     const char* str = ss.str().c_str();
-
     int hash = 0;
 
     for (int i = 0; str[i] != 0; i++){
-      hash = hash + (( (int) str[i] * 128^i ) % NO_BUCKETS ) % NO_BUCKETS;
+      hash = (hash + (( (int) str[i] * 128^i ) % NO_BUCKETS ))% NO_BUCKETS;
     }
 
     cout << "DEBUG: hash: " << hash << endl;

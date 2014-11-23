@@ -21,6 +21,9 @@ int main() {
   map->insert(pair<int, string>(2, "two"));
   map->insert(pair<int, string>(1, "one"));
   map->insert(pair<int, string>(3, "three"));
+
+  map->find(10);
+  map->find(3);
   /*
   /// \todo here is still a hidden error la
   pair<Map::iterator, bool> ret;
