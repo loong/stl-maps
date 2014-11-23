@@ -1,3 +1,11 @@
+/**
+ * \file bstmap.hpp
+ *
+ * Joel Berago and Long Hoang have implemented together the first step
+ * (because Long forgot to bring his charger to class). But most of
+ * our code has been developed individually.
+ */
+
 #ifndef BSTMAP_HPP
 #define BSTMAP_HPP
 
@@ -134,11 +142,10 @@ public:
    * \brief overloads copy constructor for deep copy
    */
   bstmap(const Self& x) : root_m(NULL) {
-    // insert(x.root_m->value_m);
-
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
-		       /// the treestructure
+		       /// the treestructure, unfortunatly not enough
+		       /// time to balance tree properly --> Winterproject!
     }
   }
 
@@ -153,12 +160,9 @@ public:
 
     clear();
     
-    //root_m = x.root_m; /// \todo Why doesn't it work without that!?
-
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
-      insert(*i);      /// insert one by one, which will be aweful for
-		       /// the treestructure
-		       }
+      insert(*i);      /// same balancing problem as for copy constructor above
+    }
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +243,6 @@ public:
 
     // Case 3: x has 2 childs
     if (n->left_m != NULL && n->right_m != NULL) {
-      cout << "Case 3" << endl;
       Node* successor = _successor(n);
 
       // replace to deleted node with successor
@@ -255,7 +258,6 @@ public:
 
     } 
     else if (n->left_m == NULL && n->right_m == NULL) {
-      cout << "Case 1" << endl;
       // Case 1: x is a leaf
       if (parent->left_m == n) {
 	parent->left_m = NULL;
@@ -267,7 +269,6 @@ public:
       delete n;
 
     } else {
-      cout << "Case 2" << endl;
 
       // Case 2: x has exactly one child
       Node* child = n->left_m;
@@ -276,6 +277,7 @@ public:
 	child = n->right_m;
       }
       
+      // connect child of deleted node with its parent directly
       // special case: deleting root
       if (n == root_m) {
 	root_m = child;
@@ -299,6 +301,12 @@ public:
     return;
   }
   
+  /**
+   * \brief erase which uses Key value 
+   * 
+   * \return size_type number of elements erased (in this case can
+   *         only be 1 or 0)
+   */
   size_type erase(const Key& x) {
     iterator it = find(x);
     
@@ -311,12 +319,15 @@ public:
     return 1; // since Key in maps are unique, can only be 1
   }
   
+  /**
+   * \brief clears all elements inside of the map
+   */
   void clear() {
     _recursive_delete(root_m);
     root_m = NULL;
   }
 
-  // map operations:
+  
   iterator find(const Key& x) {
     pair<Node*, bool> res = _find(x, root_m);
 
@@ -349,6 +360,10 @@ public:
     return 0;
   }
 
+  /**
+   * \brief subscript operator. Remarks: if Key not available, Key
+   *        with default value will be initialised
+   */
   T& operator[](const Key& k) {
     iterator it = find(k);
     
@@ -375,8 +390,12 @@ public:
     return rightmost_node()->value_m;
   }
   
-public:
+private:
 
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Helpers
+  ////////////////////////////////////////////////////////////////////////////////
+  
   /**
    * \return Node* nearest node to found
    * \return bool true if found
@@ -397,13 +416,6 @@ public:
     }
   }
 
-  
-private:
-
-  ////////////////////////////////////////////////////////////////////////////////
-  /// Helpers
-  ////////////////////////////////////////////////////////////////////////////////
-  
   /**
    * \brief used as const wrapper for global calls
    */
@@ -429,7 +441,6 @@ private:
     }
     return subtree;
   }
-
 
   /**
    * \brief get the right most, generalized so it can run on any subtree
