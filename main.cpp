@@ -1,4 +1,5 @@
 #include "bstmap.hpp"
+#include "hashtablemap.hpp"
 
 #include <map>
 #include <iostream>
@@ -8,18 +9,19 @@
 using namespace std;
 
 #ifndef USE_STD
-typedef bstmap<int, string> Map;
+typedef hashtablemap<int, string> Map;
 #else
 typedef map<int, string> Map;
 #endif
 
 int main() {
+
   Map* map = new Map();
   map->insert(pair<int, string>(10, "ten"));
   map->insert(pair<int, string>(2, "two"));
   map->insert(pair<int, string>(1, "one"));
   map->insert(pair<int, string>(3, "three"));
-
+  /*
   /// \todo here is still a hidden error la
   pair<Map::iterator, bool> ret;
   ret = map->insert(pair<int, string>(12, "twelve"));
@@ -83,8 +85,8 @@ int main() {
   //cout << "min / max  " << del_map.min().second << " " << del_map.max().first << endl;
   cout << "-------------------" << endl;
   
-  bstmap<char,int> first;
-  bstmap<char,int> second;
+  hashtablemap<char,int> first;
+  hashtablemap<char,int> second;
 
   first['x']=8;
   first['y']=16;
@@ -92,10 +94,12 @@ int main() {
 
   second=first;              // second now contains 3 ints
 
-  first=bstmap<char,int>();  // and first is now empty
+  first=hashtablemap<char,int>();  // and first is now empty
 
   cout << "Size of first: " << first.size() << '\n';   // prints 0
   cout << "Size of second: " << second.size() << '\n'; // prints 3
 
   cout << "-------------------" << endl;
+
+  */
 }

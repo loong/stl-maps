@@ -13,7 +13,7 @@ OBJS = main.o
 main: $(OBJS)
 	g++ -g $(CFLAGS) -o $@ $(OBJS) -lm
 
-main.o: bstmap.hpp main.cpp
+main.o: bstmap.hpp hashtablemap.hpp main.cpp
 	g++ -c -g main.cpp
 
 clean:
