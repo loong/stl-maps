@@ -45,6 +45,8 @@ int main() {
   cout << "Can find 4?\t"  << (map->find(4) == map->end()) << endl;
 
   cout << "-------------------" << endl;
+  cout << "Begin:\t" << (*map->begin()).second << endl;
+  cout << "-------------------" << endl;
   //Map map2(*map); // Copy constructor
   /*  
   cout << "Find2 10:\t"    << map2.find(10)->second << endl;

@@ -19,9 +19,20 @@ public:
   typedef pair<const Key, T> value_type;
   typedef unsigned int       size_type;
   typedef int                difference_type;
-  
-  typedef bstmap<key_type, mapped_type> bucket_type;
-  
+
+    /**
+   * \class Node
+   *
+   * \brief datastructure which holds the data
+   */
+  class Node {
+  public:
+    Node(value_type val) : value_m(val) {}
+    value_type value_m;
+  };
+
+  typedef bstmap<Key, Node*> bucket_type;
+
   bucket_type buckets_m[NO_BUCKETS+1]; /// the addition one will represent end() \todo
   int size_m;
 
@@ -41,40 +52,42 @@ public:
     typedef const value_type* pointer;
     typedef const value_type& reference;
 
-
     friend class hashtablemap;
     
   public:
-    const value_type keypair_m;
-    const int bucket_m;
-
+    Node* node_m;
     const hashtablemap* table_m;
 
-    _iterator(const value_type kp, int b, const hashtablemap* ht) 
-      : keypair_m(kp), bucket_m(b), table_m(ht) {}
+    _iterator(Node* n, const hashtablemap* ht) 
+      : node_m(n), table_m(ht) {}
     
     _iterator(const _iterator& x) 
-      : keypair_m(x.keypair_m), bucket_m(x.bucket_m), table_m(x.table_m) {}
+      : node_m(x.node_m), table_m(x.table_m) {}
     
     _iterator& operator=(_iterator& x) {
-      keypair_m = x.keypair_m;
+      node_m = x.keypair_m;
+      return *this;
+    }
+
+    _iterator& operator=(const _iterator& x) {
+      node_m = x.node_m;
       return *this;
     }
 
     reference operator*() {
-      return keypair_m;
+      return node_m->value_m;
     }
 
     pointer operator->() {
-      return &keypair_m;
+      return &(node_m->value_m);
     }
 
     bool operator==(const _iterator& x) {
-      return (keypair_m == x.keypair_m);
+      return (node_m == x.node_m);
     }
 
     bool operator!=(const _iterator& x) {
-      return (keypair_m != x.keypair_m);
+      return (node_m != x.node_m);
     }
 
     _iterator& operator++() {}
@@ -88,22 +101,35 @@ public:
 
 public:
   // default constructor to create an empty map
-  hashtablemap() : size_m(0) {}
+  hashtablemap() : size_m(0) {
+  //    buckets_m[NO_BUCKETS].insert(pair<key_type, mapped_type>(key_type(), mapped_type()));
+  }
 
   // overload copy constructor to do a deep copy
-  hashtablemap(const Self& x) :size_m(0) {}
+  hashtablemap(const Self& x) : size_m(0) {}
 
   // overload assignment to do a deep copy
   Self& operator=(const Self& x) {}
 
   // accessors:
-  iterator begin() {}
-  const_iterator begin() const {}
+  iterator begin() {
+    if (empty()) {
+      return end();
+    }
+
+    bucket_type next = _find_next_nonempty_bucket(0);
+    return iterator((*next.begin()).second, this);
+  }
+  
+  const_iterator begin() const {
+    
+  }
+  
   iterator end() {
-    return iterator(value_type(key_type(), mapped_type()), NO_BUCKETS+1, this);
+    return iterator(NULL, this);
   }
   const_iterator end() const {
-    return const_iterator(value_type(key_type(), mapped_type()), NO_BUCKETS+1, this);
+    return const_iterator(NULL, this);
   }
   
   bool empty() const {
@@ -116,19 +142,28 @@ public:
 
   // insert/erase
   pair<iterator, bool> insert(const value_type& x) {
-    int hash = _hash(x.first);
-    
-    pair<typename bucket_type::iterator, bool> res = buckets_m[hash].insert(x);
+    iterator it = find(x.first);
 
-    if (res.second) {
-      ++size_m;
+    // element exists already
+    if (it != end()) {
+      return pair<iterator, bool>(iterator(it.node_m, this), false);
     }
 
-    return pair<iterator, bool>(iterator(x, hash, this), res.second);
+    // insert new node
+    int hash = _hash(x.first);
+    Node* new_node = new Node(x);
+      
+    const pair<Key, Node*> keypair(x.first, new_node);
+    buckets_m[hash].insert(keypair);
+
+    ++size_m;
+
+    return pair<iterator, bool>(iterator(new_node, this), true);
   }
 
   void erase(iterator pos) {}
   size_type erase(const Key& x) {}
+  
   void clear() {}
 
   // map operations:
@@ -139,14 +174,28 @@ public:
     typename bucket_type::iterator it = b.find(x);
 
     if (it == b.end()) {
-      cout << "not found" << endl;
+      //      cout << "not found" << endl;
       return end();
     }
 
-    cout << "found" << endl;
-    return iterator(*it, hash, this);
+    //cout << "found" << endl;
+    return iterator((*it).second, this);
   }
-  const_iterator find(const Key& x) const {}
+
+  const_iterator find(const Key& x) const {
+    int hash = _hash(x);
+    
+    bucket_type b = buckets_m[hash];
+    typename bucket_type::iterator it = b.find(x);
+
+    if (it == b.end()) {
+      return end();
+    }
+
+    return const_iterator((*it).second, this);
+  }
+
+
   size_type count(const Key& x) const {}
   T& operator[](const Key& k) {}
 
@@ -165,6 +214,18 @@ private:
     cout << "\tDEBUG: hash: " << hash << endl;
 
     return hash;
+  }
+
+  bucket_type _find_next_nonempty_bucket(int const curr_index) const {
+    int i = curr_index;
+
+    for (int i = curr_index; i < sizeof(buckets_m); ++i) {
+      if (!buckets_m[i].empty()) {
+	return buckets_m[i];
+      }
+    }
+    
+    return buckets_m[NO_BUCKETS]; // similarly, end()
   }
 
 };
