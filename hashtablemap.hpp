@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <sstream>
+
 #include "bstmap.hpp"
 
 using namespace std;
@@ -20,7 +21,7 @@ public:
   typedef unsigned int       size_type;
   typedef int                difference_type;
 
-    /**
+  /**
    * \class Node
    *
    * \brief datastructure which holds the data
@@ -33,7 +34,7 @@ public:
 
   typedef bstmap<Key, Node*> bucket_type;
 
-  bucket_type buckets_m[NO_BUCKETS+1]; /// the addition one will represent end() \todo
+  bucket_type buckets_m[NO_BUCKETS]; /// the addition one will represent end() \todo
   int size_m;
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +54,7 @@ public:
     typedef const value_type& reference;
 
     friend class hashtablemap;
+    typedef bstmap<Key, Node*> bucket_type;
     
   public:
     Node* node_m;
@@ -90,9 +92,36 @@ public:
       return (node_m != x.node_m);
     }
 
-    _iterator& operator++() {}
+    _iterator& operator++() {
+      Node* next_node = NULL;
 
-    _iterator operator++(int) {}
+      Key k = node_m->value_m.first;
+      int hash = _hash(k);
+
+      bucket_type curr_bucket = table_m->buckets_m[hash]; 
+      typename bucket_type::iterator next = ++curr_bucket.find(k);
+
+      if (next != curr_bucket.end()) {
+        node_m = next->second;
+	return *this;
+      }
+
+      const bucket_type* next_bucket = table_m->_find_next_nonempty_bucket(hash);
+      
+      if (next_bucket == NULL) {
+	node_m = NULL; /// return end()
+	return *this;
+      }
+
+      node_m = next_bucket->begin()->second;
+      return *this;
+    }
+
+    _iterator operator++(int) {
+      _iterator temp = *this;
+      ++(*this);
+      return temp;
+    }
 
   };
 
@@ -101,9 +130,7 @@ public:
 
 public:
   // default constructor to create an empty map
-  hashtablemap() : size_m(0) {
-  //    buckets_m[NO_BUCKETS].insert(pair<key_type, mapped_type>(key_type(), mapped_type()));
-  }
+  hashtablemap() : size_m(0) {}
 
   // overload copy constructor to do a deep copy
   hashtablemap(const Self& x) : size_m(0) {}
@@ -117,12 +144,20 @@ public:
       return end();
     }
 
-    bucket_type next = _find_next_nonempty_bucket(0);
-    return iterator((*next.begin()).second, this);
+    const bucket_type* first_filled_bucket = _find_next_nonempty_bucket(0);
+    assert(first_filled_bucket != NULL);
+
+    Node* first_node = first_filled_bucket->begin()->second;
+    return iterator(first_node, this);
   }
   
   const_iterator begin() const {
-    
+    if (empty()) {
+      return end();
+    }
+
+    const bucket_type* next = _find_next_nonempty_bucket(0);
+    return const_iterator((*next->begin()).second, this);
   }
   
   iterator end() {
@@ -161,7 +196,9 @@ public:
     return pair<iterator, bool>(iterator(new_node, this), true);
   }
 
-  void erase(iterator pos) {}
+  void erase(iterator pos) {
+    // erase from node list
+  }
   size_type erase(const Key& x) {}
   
   void clear() {}
@@ -174,11 +211,9 @@ public:
     typename bucket_type::iterator it = b.find(x);
 
     if (it == b.end()) {
-      //      cout << "not found" << endl;
       return end();
     }
 
-    //cout << "found" << endl;
     return iterator((*it).second, this);
   }
 
@@ -195,7 +230,6 @@ public:
     return const_iterator((*it).second, this);
   }
 
-
   size_type count(const Key& x) const {}
   T& operator[](const Key& k) {}
 
@@ -211,21 +245,19 @@ private:
       hash = (hash + (( (int) str[i] * 128^i ) % NO_BUCKETS) ) % NO_BUCKETS;
     }
 
-    cout << "\tDEBUG: hash: " << hash << endl;
+    //    cout << "\tDEBUG: hash: " << hash << endl;
 
     return hash;
   }
 
-  bucket_type _find_next_nonempty_bucket(int const curr_index) const {
-    int i = curr_index;
-
-    for (int i = curr_index; i < sizeof(buckets_m); ++i) {
+  const bucket_type* _find_next_nonempty_bucket(int const curr_index) const {
+    for (int i = curr_index + 1; i < NO_BUCKETS; ++i) {
       if (!buckets_m[i].empty()) {
-	return buckets_m[i];
+	return &buckets_m[i];
       }
     }
-    
-    return buckets_m[NO_BUCKETS]; // similarly, end()
+
+    return NULL;
   }
 
 };

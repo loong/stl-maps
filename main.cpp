@@ -57,7 +57,7 @@ int main() {
 
   cout << "map[2]\t"  << map2[2]  << endl;
   cout << "map[11]\t" << map2[11] << endl;
-
+  */
   cout << "-----------------" << endl;
   
   Map del_map;
@@ -80,6 +80,8 @@ int main() {
     }
     cout << "del map\t" << (*i).second << endl;
   }
+
+  /*
 
   del_map.clear();
 
