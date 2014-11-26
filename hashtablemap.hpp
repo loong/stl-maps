@@ -1,5 +1,4 @@
-/// \todo Make number of buckets variable!
-#define NO_BUCKETS 389 //10 000th prime
+#define NO_BUCKETS 389
 
 #include "bstmap.hpp"
 
@@ -33,7 +32,7 @@ public:
 
   typedef bstmap<Key, Node*> bucket_type;
 
-  bucket_type buckets_m[NO_BUCKETS];
+  bucket_type* buckets_m;
   int size_m;
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -53,8 +52,7 @@ public:
     typedef value_type& reference;
 
     friend class hashtablemap;
-    typedef bstmap<Key, Node*> bucket_type;
-    
+        
   public:
     _iterator(Node* n = NULL, const hashtablemap* ht = NULL) 
       : node_m(n), table_m(ht) {}
@@ -84,29 +82,7 @@ public:
     }
 
     _iterator& operator++() {
-      /// \todo move into helper function
-      Node* next_node = NULL;
-
-      Key k = node_m->value_m.first;
-      int hash = _hash(k);
-
-      /// \todo memory is wasted here
-      bucket_type curr_bucket = table_m->buckets_m[hash]; 
-      typename bucket_type::iterator next = ++(curr_bucket.find(k));
-
-      if (next != curr_bucket.end()) {
-        node_m = next->second;
-	return *this;
-      }
-
-      const bucket_type* next_bucket = table_m->_find_next_nonempty_bucket(hash);
-      
-      if (next_bucket == NULL) {
-	node_m = NULL; /// return end()
-	return *this;
-      }
-
-      node_m = next_bucket->begin()->second;
+      node_m = table_m->_get_next(node_m);
       return *this;
     }
 
@@ -125,10 +101,10 @@ public:
 
 public:
   // default constructor to create an empty map
-  hashtablemap() : size_m(0) {}
+  hashtablemap() : buckets_m(new bucket_type[NO_BUCKETS]), size_m(0) {}
 
   // overload copy constructor to do a deep copy
-  hashtablemap(const Self& x) : size_m(0) {
+  hashtablemap(const Self& x) : buckets_m(new bucket_type[NO_BUCKETS]), size_m(0) {
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
 		       /// the treestructure, unfortunatly not enough
@@ -239,8 +215,14 @@ public:
     return 1; // since Key in maps are unique, can only be 1
   }
 
-  
-  void clear() {}
+  void clear() {
+    if (empty()) {
+      return;
+    }
+
+    delete[] buckets_m;
+    buckets_m = new bucket_type[NO_BUCKETS];
+  }
 
   // map operations:
   iterator find(const Key& x) {
@@ -320,6 +302,30 @@ private:
     }
 
     return NULL;
+  }
+
+  Node* _get_next(Node* n) const {    
+    Key k = n->value_m.first;
+    int hash = _hash(k);
+
+    /// \todo memory is wasted here
+    bucket_type curr_bucket = buckets_m[hash]; 
+    typename bucket_type::iterator next = ++(curr_bucket.find(k));
+
+    // is there an element in current bucket?
+    if (next != curr_bucket.end()) {
+      return next->second;
+    }
+
+    const bucket_type* next_bucket = _find_next_nonempty_bucket(hash);
+      
+    // is this the last element?
+    if (next_bucket == NULL) {
+      return NULL;  /// similarly, end()
+    }
+
+    // return first node of next non-empty bucket
+    return next_bucket->begin()->second;
   }
 
 };
