@@ -33,7 +33,7 @@ public:
 
   typedef bstmap<Key, Node*> bucket_type;
 
-  bucket_type buckets_m[NO_BUCKETS]; /// the addition one will represent end() \todo
+  bucket_type buckets_m[NO_BUCKETS];
   int size_m;
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -90,8 +90,9 @@ public:
       Key k = node_m->value_m.first;
       int hash = _hash(k);
 
+      /// \todo memory is wasted here
       bucket_type curr_bucket = table_m->buckets_m[hash]; 
-      typename bucket_type::iterator next = ++curr_bucket.find(k);
+      typename bucket_type::iterator next = ++(curr_bucket.find(k));
 
       if (next != curr_bucket.end()) {
         node_m = next->second;
@@ -186,7 +187,7 @@ public:
     return size_m;
   }
 
-  // insert/erase
+  // insert
   pair<iterator, bool> insert(const value_type& x) {
     iterator it = find(x.first);
 
@@ -207,10 +208,37 @@ public:
     return pair<iterator, bool>(iterator(new_node, this), true);
   }
 
-  void erase(iterator pos) {
-    // erase from node list
+  void erase(iterator pos) throw (runtime_error) {
+    if (pos == NULL) {
+      throw runtime_error("Cannot erase Null iterator");
+    }
+
+    erase(pos->first);
   }
-  size_type erase(const Key& x) {}
+  
+
+  /**
+   * \brief erase which uses Key value 
+   * 
+   * \return size_type number of elements erased (in this case can
+   *         only be 1 or 0)
+   */
+  size_type erase(const Key& x) {
+    iterator it = find(x);
+    
+    if (it == end()) { // Key not found
+      return 0;
+    }
+    
+    int hash = _hash(x);
+    assert(buckets_m[hash].find(x) != buckets_m[hash].end());
+
+    buckets_m[hash].erase(x);
+    --size_m;
+    
+    return 1; // since Key in maps are unique, can only be 1
+  }
+
   
   void clear() {}
 
@@ -218,10 +246,10 @@ public:
   iterator find(const Key& x) {
     int hash = _hash(x);
     
-    bucket_type b = buckets_m[hash];
-    typename bucket_type::iterator it = b.find(x);
+    bucket_type* b = &buckets_m[hash];   // Use pointer to prevent copying
+    typename bucket_type::iterator it = b->find(x);
 
-    if (it == b.end()) {
+    if (it == b->end()) {
       return end();
     }
 
@@ -231,10 +259,10 @@ public:
   const_iterator find(const Key& x) const {
     int hash = _hash(x);
     
-    bucket_type b = buckets_m[hash];
-    typename bucket_type::iterator it = b.find(x);
+    bucket_type* b = &buckets_m[hash];   // Use pointer to prevent copying whole map
+    typename bucket_type::iterator it = b->find(x);
 
-    if (it == b.end()) {
+    if (it == b->end()) {
       return end();
     }
 

@@ -9,6 +9,7 @@
 using namespace std;
 
 #ifndef USE_STD
+//typedef bstmap<int, string> Map;
 typedef hashtablemap<int, string> Map;
 #else
 typedef map<int, string> Map;
@@ -28,7 +29,7 @@ int main() {
   cout << "insert new\t";
   cout << ret.second << endl;
   cout << "insert again\t";
-  cout << map->insert(pair<int, string>(3, "asdf")).second << endl;
+  //cout << map->insert(pair<int, string>(3, "asdf")).second << endl;
   
 #ifndef USE_STD
   //cout << "Min:\t" << map->min().first << endl;
@@ -62,29 +63,24 @@ int main() {
   Map del_map;
 
   del_map.insert(pair<int, string>(10, "ten"));
-  del_map.insert(pair<int, string>(5, "five"));
-  del_map.insert(pair<int, string>(2, "two"));
+  del_map.insert(pair<int, string>(5,  "five"));
+  del_map.insert(pair<int, string>(2,  "two"));
   del_map.insert(pair<int, string>(13, "thirteen"));
-  del_map.insert(pair<int, string>(3, "three"));
-  del_map.insert(pair<int, string>(2, "two"));
+  del_map.insert(pair<int, string>(3,  "three"));
+  del_map.insert(pair<int, string>(2,  "two"));
   del_map.insert(pair<int, string>(11, "eleven"));
-  del_map.insert(pair<int, string>(7, "seven"));
+  del_map.insert(pair<int, string>(7,  "seven"));
 
   del_map.erase(13);
   del_map.insert(pair<int, string>(13, "thirteen"));
-
+  
   for (Map::iterator i = del_map.begin(); i != del_map.end(); ++i) {
-    if ((*i).second.empty()) {
-      cout << "second is empty" << endl;
-    }
     cout << "del map\t" << (*i).second << endl;
   }
 
   Map::iterator i = del_map.begin();
   i++;
   ++i;
-
-  /*
 
   del_map.clear();
 
@@ -109,5 +105,4 @@ int main() {
 
   cout << "-------------------" << endl;
 
-  */
 }
