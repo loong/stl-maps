@@ -22,10 +22,8 @@ int main() {
   map->insert(pair<int, string>(1, "one"));
   map->insert(pair<int, string>(3, "three"));
   
-  //  pair<Map::iterator, bool> ret;
-  //ret = map->insert(pair<int, string>(12, "twelve"));
-
-  pair<Map::iterator, bool> ret = map->insert(pair<int, string>(12, "twelve"));
+  pair<Map::iterator, bool> ret;
+  ret = map->insert(pair<int, string>(12, "twelve"));
 
   cout << "insert new\t";
   cout << ret.second << endl;
@@ -47,17 +45,18 @@ int main() {
   cout << "-------------------" << endl;
   cout << "Begin:\t" << (*map->begin()).second << endl;
   cout << "-------------------" << endl;
-  //Map map2(*map); // Copy constructor
-  /*  
+  Map map2(*map); // Copy constructor
+  
   cout << "Find2 10:\t"    << map2.find(10)->second << endl;
   cout << "Find2 3:\t"     << map2.find(3)->second << endl;
   cout << "Can find2 4?\t" << (map2.find(4) == map2.end()) << endl;
 
-  map2[11] = "eleven";
+   int num = 11;
+  map2[num] = "eleven";
 
   cout << "map[2]\t"  << map2[2]  << endl;
   cout << "map[11]\t" << map2[11] << endl;
-  */
+  
   cout << "-----------------" << endl;
   
   Map del_map;
@@ -80,6 +79,10 @@ int main() {
     }
     cout << "del map\t" << (*i).second << endl;
   }
+
+  Map::iterator i = del_map.begin();
+  i++;
+  ++i;
 
   /*
 

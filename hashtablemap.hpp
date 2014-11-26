@@ -1,10 +1,9 @@
 /// \todo Make number of buckets variable!
 #define NO_BUCKETS 389 //10 000th prime
 
-#include <cstddef>
-#include <sstream>
-
 #include "bstmap.hpp"
+
+#include <sstream>
 
 using namespace std;
 
@@ -50,26 +49,18 @@ public:
     typedef input_iterator_tag iterator_category;
     typedef _T value_type;
     typedef int difference_type;
-    typedef const value_type* pointer;
-    typedef const value_type& reference;
+    typedef value_type* pointer;
+    typedef value_type& reference;
 
     friend class hashtablemap;
     typedef bstmap<Key, Node*> bucket_type;
     
   public:
-    Node* node_m;
-    const hashtablemap* table_m;
-
-    _iterator(Node* n, const hashtablemap* ht) 
+    _iterator(Node* n = NULL, const hashtablemap* ht = NULL) 
       : node_m(n), table_m(ht) {}
     
     _iterator(const _iterator& x) 
       : node_m(x.node_m), table_m(x.table_m) {}
-    
-    _iterator& operator=(_iterator& x) {
-      node_m = x.keypair_m;
-      return *this;
-    }
 
     _iterator& operator=(const _iterator& x) {
       node_m = x.node_m;
@@ -93,6 +84,7 @@ public:
     }
 
     _iterator& operator++() {
+      /// \todo move into helper function
       Node* next_node = NULL;
 
       Key k = node_m->value_m.first;
@@ -123,6 +115,8 @@ public:
       return temp;
     }
 
+    Node* node_m;
+    const hashtablemap* table_m;
   };
 
   typedef _iterator<value_type> iterator;
@@ -133,10 +127,27 @@ public:
   hashtablemap() : size_m(0) {}
 
   // overload copy constructor to do a deep copy
-  hashtablemap(const Self& x) : size_m(0) {}
+  hashtablemap(const Self& x) : size_m(0) {
+    for (const_iterator i = x.begin(); i != x.end(); ++i) {
+      insert(*i);      /// insert one by one, which will be aweful for
+		       /// the treestructure, unfortunatly not enough
+		       /// time to balance tree properly --> Winterproject!
+    }
+  }
 
   // overload assignment to do a deep copy
-  Self& operator=(const Self& x) {}
+  Self& operator=(const Self& x) {
+    // guard against self assignment
+    if (this == &x) {
+      return *this;
+    }
+
+    clear();
+    
+    for (const_iterator i = x.begin(); i != x.end(); ++i) {
+      insert(*i);      /// same balancing problem as for copy constructor above
+    }
+  }
 
   // accessors:
   iterator begin() {
@@ -230,8 +241,33 @@ public:
     return const_iterator((*it).second, this);
   }
 
-  size_type count(const Key& x) const {}
-  T& operator[](const Key& k) {}
+  /**
+   * \brief Because all elements in a map container are unique, the
+   * function can only return 1 (if the element is found) or zero
+   * (otherwise).
+   */
+  size_type count(const Key& x) const {
+    if (find(x) != end()) {
+      return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * \brief subscript operator. Remarks: if Key not available, Key
+   *        with default value will be initialised
+   */
+  T& operator[](const Key& k) {
+    iterator it = find(k);
+    
+    if (it != end()) {            // found key
+      return (*it).second;
+    }
+    else {                        // not found -> create empty
+      insert(value_type(k, T()));
+      return operator[](k);       // a bit ugly
+    }
+  }
 
 private:
   static int _hash(Key k) {
@@ -244,8 +280,6 @@ private:
     for (int i = 0; str[i] != 0; ++i){
       hash = (hash + (( (int) str[i] * 128^i ) % NO_BUCKETS) ) % NO_BUCKETS;
     }
-
-    //    cout << "\tDEBUG: hash: " << hash << endl;
 
     return hash;
   }
