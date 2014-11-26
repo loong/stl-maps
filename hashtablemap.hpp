@@ -1,11 +1,26 @@
+#ifndef HASHTABLEMAP_HPP
+#define HASHTABLEMAP_HPP
+
 #define NO_BUCKETS 389
+#define RADIX 64
 
 #include "bstmap.hpp"
 
+#include <iterator>
 #include <sstream>
+
+#include <cassert>
 
 using namespace std;
 
+/**
+ * \class hashtablemap
+ *
+ * \brief hashtablemap is a map container template, which implements a
+ *        hash table. It follows STL idiom for easy plug and play.
+ *        _Note_: As opposed to std::map, this container does throw
+ *        runtime_error
+ */
 template <class Key, class T>
 class hashtablemap
 {
@@ -19,12 +34,13 @@ public:
   typedef unsigned int       size_type;
   typedef int                difference_type;
 
+private:
   /**
-   * \class Node
+   * \struct Node
    *
-   * \brief datastructure which holds the data
+   * \brief data structure which holds the data
    */
-  class Node {
+  struct Node {
   public:
     Node(value_type val) : value_m(val) {}
     value_type value_m;
@@ -35,13 +51,14 @@ public:
   bucket_type* buckets_m;
   int size_m;
 
+
   ////////////////////////////////////////////////////////////////////////////////
   /// Iterators
   ////////////////////////////////////////////////////////////////////////////////
 public:
   /**
    * \brief Template in order to create iterator and const_iterator
-   *        without copy pasting
+   *        without copy pasting. Implements a forward_iterator
    */
   template <typename _T>
   class _iterator {
@@ -99,11 +116,17 @@ public:
   typedef _iterator<value_type> iterator;
   typedef _iterator<const value_type> const_iterator;
 
-public:
-  // default constructor to create an empty map
-  hashtablemap() : buckets_m(new bucket_type[NO_BUCKETS]), size_m(0) {}
 
-  // overload copy constructor to do a deep copy
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Constructors, Destructor, Assignment
+  ////////////////////////////////////////////////////////////////////////////////
+
+public:
+  hashtablemap() : buckets_m(new bucket_type[NO_BUCKETS]), size_m(0) {}
+  
+  /**
+   * \brief overloads copy constructor for deep copy
+   */
   hashtablemap(const Self& x) : buckets_m(new bucket_type[NO_BUCKETS]), size_m(0) {
     for (const_iterator i = x.begin(); i != x.end(); ++i) {
       insert(*i);      /// insert one by one, which will be aweful for
@@ -112,9 +135,11 @@ public:
     }
   }
 
-  // overload assignment to do a deep copy
+  /**
+   * \brief overloads assignment for deep copy
+   */
   Self& operator=(const Self& x) {
-    // guard against self assignment
+    /// guard against self assignment
     if (this == &x) {
       return *this;
     }
@@ -126,31 +151,79 @@ public:
     }
   }
 
-  // accessors:
+  /**
+   * \brief free dynamic allocated members
+   */
+  ~hashtablemap() {
+    delete[] buckets_m;
+  }
+
+  
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Accessors
+  ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * \brief subscript operator. Remarks: if Key not available, Key
+   *        with default value will be initialised
+   */
+  T& operator[](const Key& k) {
+    iterator it = find(k);
+    
+    if (it != end()) {            // found key
+      return (*it).second;
+    }
+    else {                        // not found -> create empty
+      insert(value_type(k, T()));
+      return operator[](k);       // a bit ugly
+    }
+  }
+
+  /** 
+   * \return iterator keypair in first non-empty bucket
+   */
   iterator begin() {
     if (empty()) {
       return end();
     }
 
+    // finds the first node in the first non-empty bucket
     const bucket_type* first_filled_bucket = _find_next_nonempty_bucket(0);
-    assert(first_filled_bucket != NULL);
+    assert(first_filled_bucket != NULL); // logic error if this occurs
 
     Node* first_node = first_filled_bucket->begin()->second;
+    
     return iterator(first_node, this);
   }
-  
+
+  /** 
+   * \return const_iterator keypair in first non-empty bucket
+   * \todo use template!
+   */  
   const_iterator begin() const {
     if (empty()) {
       return end();
     }
 
-    const bucket_type* next = _find_next_nonempty_bucket(0);
-    return const_iterator((*next->begin()).second, this);
+    // finds the first node in the first non-empty bucket
+    const bucket_type* first_filled_bucket = _find_next_nonempty_bucket(0);
+    assert(first_filled_bucket != NULL); // logic error if this occurs
+
+    Node* first_node = first_filled_bucket->begin()->second;
+    
+    return const_iterator(first_node, this);
   }
-  
+
+  /**
+   * \return iterator "past-the-end" element
+   */
   iterator end() {
     return iterator(NULL, this);
   }
+
+  /**
+   * \return const+iterator "past-the-end" element
+   */
   const_iterator end() const {
     return const_iterator(NULL, this);
   }
@@ -160,10 +233,23 @@ public:
   }
 
   size_type size() const {
-    return size_m;
+    return size_m; // hashtablemap is keeping size_m up to date when
+		   // inserting or erasing (don't forget clear())
+		   // elements
   }
 
-  // insert
+
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Insert and Erase
+  ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * \brief seperate chaining approach for insertion in order to
+   *        prevent primary clustering
+   *
+   * \return pair<iterator, bool> iterator to node in tree, bool is
+   *         true if an insertion has been done
+   */
   pair<iterator, bool> insert(const value_type& x) {
     iterator it = find(x.first);
 
@@ -184,6 +270,9 @@ public:
     return pair<iterator, bool>(iterator(new_node, this), true);
   }
 
+  /**
+   * \brief erase by iterator
+   */
   void erase(iterator pos) throw (runtime_error) {
     if (pos == NULL) {
       throw runtime_error("Cannot erase Null iterator");
@@ -191,10 +280,9 @@ public:
 
     erase(pos->first);
   }
-  
 
   /**
-   * \brief erase which uses Key value 
+   * \brief erase by Key value 
    * 
    * \return size_type number of elements erased (in this case can
    *         only be 1 or 0)
@@ -215,6 +303,12 @@ public:
     return 1; // since Key in maps are unique, can only be 1
   }
 
+  /**
+   * \brief Empty all buckets
+   * 
+   * Does not uses iterator in order to save the "searching for
+   * non-empty buckets" step.
+   */
   void clear() {
     if (empty()) {
       return;
@@ -222,9 +316,15 @@ public:
 
     delete[] buckets_m;
     buckets_m = new bucket_type[NO_BUCKETS];
+
+    size_m = 0;
   }
 
-  // map operations:
+
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Find and count
+  ////////////////////////////////////////////////////////////////////////////////
+
   iterator find(const Key& x) {
     int hash = _hash(x);
     
@@ -238,6 +338,7 @@ public:
     return iterator((*it).second, this);
   }
 
+  /// \todo use template
   const_iterator find(const Key& x) const {
     int hash = _hash(x);
     
@@ -263,37 +364,39 @@ public:
     return 0;
   }
 
-  /**
-   * \brief subscript operator. Remarks: if Key not available, Key
-   *        with default value will be initialised
-   */
-  T& operator[](const Key& k) {
-    iterator it = find(k);
-    
-    if (it != end()) {            // found key
-      return (*it).second;
-    }
-    else {                        // not found -> create empty
-      insert(value_type(k, T()));
-      return operator[](k);       // a bit ugly
-    }
-  }
-
+  ////////////////////////////////////////////////////////////////////////////////
+  /// Helpers
+  ////////////////////////////////////////////////////////////////////////////////
 private:
-  static int _hash(Key k) {
-    stringstream ss;
-    ss << k;
+  
+  /**
+   * \brief Hash function uses simple modulus approach. Additionally
+   *        radix is used to further randomize the bucket location a
+   *        bit more
+  */
+  int _hash(Key k) const {
+    // lazy stringstream method
+    // \todo use bytewise hashing rather than characterwise
+    stringstream ss; ss << k;
 
-    const char* str = ss.str().c_str();
+    const char* str = ss.str().c_str(); // just use cstring so we
+					// don't need to include
+					// strlen
     int hash = 0;
 
-    for (int i = 0; str[i] != 0; ++i){
-      hash = (hash + (( (int) str[i] * 128^i ) % NO_BUCKETS) ) % NO_BUCKETS;
+    for (int i = 0; str[i] != 0; ++i) {
+      // takes modulus in every step to prevent loosing precision due
+      // to too big numbers
+      hash = (hash + (( (int) str[i] * RADIX^i ) % NO_BUCKETS) ) % NO_BUCKETS;
     }
 
     return hash;
   }
 
+  /**
+   * returns a constant type to add security (there should be no
+   * need to change the content of the bucket)
+   */
   const bucket_type* _find_next_nonempty_bucket(int const curr_index) const {
     for (int i = curr_index + 1; i < NO_BUCKETS; ++i) {
       if (!buckets_m[i].empty()) {
@@ -304,6 +407,10 @@ private:
     return NULL;
   }
 
+  /**
+   * \brief Used for iteration.
+   * \return Node* returns NULL if there are no following Nodes
+   */
   Node* _get_next(Node* n) const {    
     Key k = n->value_m.first;
     int hash = _hash(k);
@@ -329,3 +436,5 @@ private:
   }
 
 };
+
+#endif

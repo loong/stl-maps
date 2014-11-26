@@ -1,9 +1,5 @@
 /**
  * \file bstmap.hpp
- *
- * Joel Berago and Long Hoang have implemented together the first step
- * (because Long forgot to bring his charger to class). But most of
- * our code has been developed individually.
  */
 
 #ifndef BSTMAP_HPP
@@ -258,14 +254,19 @@ public:
 
     } 
     else if (n->left_m == NULL && n->right_m == NULL) {
-      // Case 1: x is a leaf
-      if (parent->left_m == n) {
-	parent->left_m = NULL;
+      // Case 1: x is a leaf      
+      if (parent != NULL) {
+	if (parent->left_m == n) {
+	  parent->left_m = NULL;
+	}
+	else {
+	  parent->right_m = NULL;
+	}
       }
       else {
-	parent->right_m = NULL;
+	/// \todo verify!
+	root_m = NULL;
       }
-
       delete n;
 
     } else {
@@ -273,7 +274,6 @@ public:
       // Case 2: x has exactly one child
       Node* child = n->left_m;
       if (child == NULL) {
-	cout << "right child" << endl;
 	child = n->right_m;
       }
       
@@ -284,11 +284,9 @@ public:
       }
       else {
 	if (n == parent->left_m) {
-	  cout << "left" << endl;
 	  parent->left_m = child;
 	}
 	else {
-	  cout << "right" << endl;
 	  parent->right_m = child;
 	}
       }
@@ -484,9 +482,8 @@ private:
 
     _recursive_delete(n->right_m);
     _recursive_delete(n->left_m);  
-    
+
     delete n;
-    n = NULL;
   }
 
   /**
